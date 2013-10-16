@@ -8,7 +8,7 @@ Take a simple folder, `pics`,  containing
 * pics/IMG_2012.JPG
 * pics/IMG_2012.meta
 
-Where `pics/IMG_2012.JPG` is a jpeg and `pics/IMG_2012.meta` is a key-value pair file where each pair is represented according to [HTTP Header (REFC 2616 &sect; 14)](http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html format):
+Where `pics/IMG_2012.JPG` is a jpeg and `pics/IMG_2012.meta` is a key-value pair file where each pair is represented according to [HTTP Header (RFC 2616 &sect; 14)](http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html format):
 
     Key1: Value
     Key2: Value
