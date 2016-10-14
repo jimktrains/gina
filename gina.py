@@ -1,7 +1,7 @@
 #!/usr/bin/evn python3
 
 import os
-from PIL import Image
+from PIL import Image,ExifTags
 from jinja2 import Template
 
 
@@ -31,9 +31,28 @@ class InputImage:
     def make_thumb(self):
         return self._make_thumb(self.thumb_size, self.thumb_path)
 
+    def _get_rotate(self, image):
+        if hasattr(image, '_getexif'): # only present in JPEGs
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation]=='Orientation':
+                    break
+            e = image._getexif()       # returns None if no EXIF data
+            if e is not None:
+                exif=dict(e.items())
+                orientation = exif[orientation]
+
+            return orientation
+    def _rotate(self, image):
+        orientation = self._get_rotate(image)
+        if orientation == 3:   image = image.transpose(Image.ROTATE_180)
+        elif orientation == 6: image = image.transpose(Image.ROTATE_270)
+        elif orientation == 8: image = image.transpose(Image.ROTATE_90)
+        return image
+
     def _make_thumb(self, size, thumb):
         if not os.path.isfile(thumb):
             im = Image.open(self.image_path)
+            im = self._rotate(im)
             im.thumbnail([size,size])
             im.save(thumb, "JPEG")
         return thumb
