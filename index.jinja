@@ -1,0 +1,20 @@
+<html>
+<header>
+  <style>
+    .thumb {
+      float: left;
+      margin-left: 10px;
+    }
+  </style>
+
+</header>
+<body>
+<h1>Index</h1>
+{% for image in images %}
+<div class="thumb">
+<a href="{{image.page_path}}"><img src="{{image.sm_thumb_path}}"></a>
+<p>{{image.meta.title}}
+</div>
+{% endfor %}
+</body>
+</html>
