@@ -19,9 +19,9 @@ class InputImage:
         self.image_path = image
         self.file, self.ext = os.path.splitext(image)
         self.page_path =self.file + '.html'  
-        self.thumb_size = 640
+        self.thumb_size = 800
         self.thumb_path =self.file + '.thumbnail.' + str(self.thumb_size) + self.ext
-        self.sm_thumb_size = 150
+        self.sm_thumb_size = 250
         self.sm_thumb_path =self.file + '.thumbnail.' + str(self.sm_thumb_size) + self.ext
         self.meta = {
             'title': self.file
@@ -39,7 +39,8 @@ class InputImage:
             e = image._getexif()       # returns None if no EXIF data
             if e is not None:
                 exif=dict(e.items())
-                orientation = exif[orientation]
+                if orientation in exif:
+                    orientation = exif[orientation]
 
             return orientation
     def _rotate(self, image):
@@ -57,18 +58,21 @@ class InputImage:
             im.save(thumb, "JPEG")
         return thumb
 
-    def make_page(self):
+    def make_page(self, prev_image, next_image):
         thumb = self.make_thumb()
         
         with open(self.page_path , 'w') as content_file:
-            content_file.write(image_templ.render(self.__dict__))
+            content_file.write(image_templ.render(self.__dict__, prev_image=prev_image, next_image=next_image))
+
+def generate_prev_next(images):
+    return zip([None] + images, images, images[1:] + [None])
 
 image_files = filter(lambda x : x.lower().endswith('.jpg'),  os.listdir("."))
 image_files = filter(lambda x : 'thumbnail' not in x.lower(),  image_files)
 images = list(map(lambda x : InputImage(x), image_files))
 list(map(InputImage.make_thumb, images))
 list(map(InputImage.make_sm_thumb, images))
-list(map(InputImage.make_page, images))
+list(map(lambda pcn : pcn[1].make_page(prev_image=pcn[0], next_image=pcn[2]), generate_prev_next(images)))
 
 with open('index.html', 'w') as index_file:
     index_file.write(index_templ.render(images=images))

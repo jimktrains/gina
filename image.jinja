@@ -1,9 +1,24 @@
 <html>
-<header>
-</header>
+<head>
+{% if prev_image %}
+<link href="{{prev_image.page_path}}" rel="previous"/>
+{% endif %}
+{% if next_image %}
+<link href="{{next_image.page_path}}" rel="next"/>
+{% endif %}
+<link href="./" rel="index"/>
+</head>
 <body>
 <h2>{{meta.title}}</h2>
-<a href="{{image_path}}"><img src="{{thumb_path}}"></a>
-<p><a href="{{image_path}}" download>Download</a>
+<div><a href="{{image_path}}"><img src="{{thumb_path}}"></a>
+<p><small>Click image to view larger</small></div>
+<div><a href="{{image_path}}" download>Download</a></div>
+<div><a href="./">Index</a></div>
+{% if prev_image %}
+<div><a href="{{prev_image.page_path}}">Prev</a>
+{% endif %}
+{% if next_image %}
+<div><a href="{{next_image.page_path}}">Next</a>
+{% endif %}
 </body>
 </html>
