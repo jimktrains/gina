@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
 import os
+import os.path
 from PIL import Image,ExifTags
 from jinja2 import Template
+import EXIF
+from datetime import datetime
+import time
+import pyexiv2
 
+# This is a different library (I'm using https://launchpad.net/py3exiv2)
+# but this has the namespace I needed and is the same issue.
+# https://github.com/LeoHsiao1/pyexiv2/issues/128
+pyexiv2.register_namespace('http://ns.google.com/photos/1.0/container/item/', 'Item')
 
 src_path = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(src_path, 'image.jinja') , 'r') as content_file:
@@ -26,25 +35,51 @@ class InputImage:
         self.meta = {
             'title': self.file
         }
+        metadata = pyexiv2.ImageMetadata(self.image_path)
+        metadata.read()
+
+        self.exif = metadata
+        #with open(self.image_path, 'rb') as f:
+        #   self.exif = EXIF.process_file(f)
+
+        # TODO: Extracting the thumbs might be nice, but for later.
+
+        tags_to_delete = ['EXIF MakerNote']
+        for tag in self.exif.keys():
+            if 'Thumbnail' in tag:
+                tags_to_delete.append(tag)
+
+        for tag in tags_to_delete:
+            if tag in self.exif:
+                del self.exif[tag]
+
+        if 'EXIF UserComment' in self.exif:
+            if self.exif['EXIF UserComment'].printable[0] == 0:
+                del self.exif['EXIF UserComment']
+
+    def get_datetime(self):
+        for tag in ['Image DateTime']:
+            if tag in self.exif:
+                dt = datetime.strptime(str(self.exif[tag]), "%Y:%m:%d %H:%M:%S")
+                return time.mktime(dt.timetuple())
+        return os.path.getctime(self.image_path)
+
     def make_sm_thumb(self):
         return self._make_thumb(self.sm_thumb_size, self.sm_thumb_path)
     def make_thumb(self):
         return self._make_thumb(self.thumb_size, self.thumb_path)
 
-    def _get_rotate(self, image):
-        if hasattr(image, '_getexif'): # only present in JPEGs
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation]=='Orientation':
-                    break
-            e = image._getexif()       # returns None if no EXIF data
-            if e is not None:
-                exif=dict(e.items())
-                if orientation in exif:
-                    orientation = exif[orientation]
+    def _get_rotate(self):
+        # I'm trying to figure out how this is stored, at least ones from
+        # my phone don't vary it?
+        orientation = 0
+        #if 'Image Orientation' in self.exif:
+        #    orientation = self.exif['Image Orientation']
 
-            return orientation
+        #print(f"Orientation: {orientation}")
+        return orientation
     def _rotate(self, image):
-        orientation = self._get_rotate(image)
+        orientation = self._get_rotate()
         if orientation == 3:   image = image.transpose(Image.ROTATE_180)
         elif orientation == 6: image = image.transpose(Image.ROTATE_270)
         elif orientation == 8: image = image.transpose(Image.ROTATE_90)
@@ -59,8 +94,6 @@ class InputImage:
         return thumb
 
     def make_page(self, prev_image, next_image):
-        thumb = self.make_thumb()
-        
         with open(self.page_path , 'w') as content_file:
             content_file.write(image_templ.render(self.__dict__, prev_image=prev_image, next_image=next_image))
 
@@ -70,6 +103,7 @@ def generate_prev_next(images):
 image_files = filter(lambda x : x.lower().endswith('.jpg'),  os.listdir("."))
 image_files = filter(lambda x : 'thumbnail' not in x.lower(),  image_files)
 images = list(map(lambda x : InputImage(x), image_files))
+images = list(sorted(images, key=InputImage.get_datetime))
 list(map(InputImage.make_thumb, images))
 list(map(InputImage.make_sm_thumb, images))
 list(map(lambda pcn : pcn[1].make_page(prev_image=pcn[0], next_image=pcn[2]), generate_prev_next(images)))

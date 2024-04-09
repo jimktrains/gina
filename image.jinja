@@ -12,7 +12,16 @@
 <h2>{{meta.title}}</h2>
 <div><a href="{{image_path}}"><img src="{{thumb_path}}"></a>
 <p><small>Click image to view larger</small></div>
-<div><a href="{{image_path}}" download>Download</a></div>
+<div><a href="{{image_path}}" download>Download Full Size</a></div>
+<h3>EXIF</h3>
+<dl>
+{% for key, value in exif.items() %}
+<dt><abbr title="{{value.key}}">{{value.label}}</abbr></dt>
+<dd>{{value.human_value}}</dd>
+{% endfor %}
+</dl>
+<hr>
+
 <div><a href="./">Index</a></div>
 {% if prev_image %}
 <div><a href="{{prev_image.page_path}}">Prev</a>
