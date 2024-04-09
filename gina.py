@@ -4,7 +4,6 @@ import os
 import os.path
 from PIL import Image,ExifTags
 from jinja2 import Template
-import EXIF
 from datetime import datetime
 import time
 import pyexiv2
@@ -44,7 +43,16 @@ class InputImage:
 
         # TODO: Extracting the thumbs might be nice, but for later.
 
-        tags_to_delete = ['EXIF MakerNote']
+        tags_to_delete = ['Exif.Canon.CameraInfo',
+                          'Exif.Photo.MakerNote', 
+                          'Exif.Canon.DustRemovalData',
+                          'Exif.Canon.CustomFunctions',
+                          'Exif.Canon.ColorData',
+                          'Exif.Canon.SensorInfo'
+                          'Exif.Canon.CustomPictureStyleFileName',
+                          'Exif.Canon.VignettingCorr',
+                          'Exif.Canon.VignettingCorr2',
+                          ]
         for tag in self.exif.keys():
             if 'Thumbnail' in tag:
                 tags_to_delete.append(tag)
@@ -58,9 +66,9 @@ class InputImage:
                 del self.exif['EXIF UserComment']
 
     def get_datetime(self):
-        for tag in ['Image DateTime']:
+        for tag in ['Exif.Image.DateTime']:
             if tag in self.exif:
-                dt = datetime.strptime(str(self.exif[tag]), "%Y:%m:%d %H:%M:%S")
+                dt = datetime.strptime(str(self.exif[tag].raw_value), "%Y:%m:%d %H:%M:%S")
                 return time.mktime(dt.timetuple())
         return os.path.getctime(self.image_path)
 
