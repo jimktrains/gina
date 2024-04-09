@@ -15,7 +15,9 @@
 {% for image in images %}
 <div class="thumb">
 <a href="{{image.page_path}}"><img src="{{image.sm_thumb_path}}"></a>
-<p>{{image.meta.title}}
+<p>{{image.meta.title}}<br>
+{{image.get_datetime_str()}}
+</p>
 </div>
 {% endfor %}
 </body>

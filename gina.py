@@ -72,6 +72,12 @@ class InputImage:
                 return time.mktime(dt.timetuple())
         return os.path.getctime(self.image_path)
 
+    def get_datetime_str(self):
+        for tag in ['Exif.Image.DateTime']:
+            if tag in self.exif:
+                return self.exif[tag].human_value
+        return ""
+
     def make_sm_thumb(self):
         return self._make_thumb(self.sm_thumb_size, self.sm_thumb_path)
     def make_thumb(self):
