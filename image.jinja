@@ -15,9 +15,19 @@
 <div><a href="{{image_path}}" download>Download Full Size</a></div>
 <h3>EXIF</h3>
 <dl>
-{% for key, value in exif.items() %}
-<dt><abbr title="{{value.key}}">{{value.label}}</abbr></dt>
-<dd>{{value.human_value}}</dd>
+{% for tag in exif.keys() %}
+{% if exif[tag].__class__.__name__ == 'XmpTag' %}
+<dt><abbr title="{{exif[tag].key}}">
+{% if exif[tag].title|length %}
+  {{exif[tag].title}}</abbr></dt>
+{% else %}
+  {{exif[tag].key}}
+{% endif %}
+<dd>{{exif[tag].raw_value}}</dd>
+{% elif exif[tag].__class__.__name__ == 'ExifTag' %}
+<dt><abbr title="{{exif[tag].key}}">{{exif[tag].label}}</abbr></dt>
+<dd>{{exif[tag].human_value}}</dd>
+{% endif %}
 {% endfor %}
 </dl>
 <hr>

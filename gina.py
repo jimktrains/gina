@@ -38,6 +38,11 @@ class InputImage:
         metadata.read()
 
         self.exif = metadata
+
+        if "PANO" in self.image_path:
+            print(self.image_path)
+            print(list(metadata.keys()))
+            print()
         #with open(self.image_path, 'rb') as f:
         #   self.exif = EXIF.process_file(f)
 
@@ -53,10 +58,6 @@ class InputImage:
                           'Exif.Canon.VignettingCorr',
                           'Exif.Canon.VignettingCorr2',
                           ]
-        for tag in self.exif.keys():
-            if 'Thumbnail' in tag:
-                tags_to_delete.append(tag)
-
         for tag in tags_to_delete:
             if tag in self.exif:
                 del self.exif[tag]
